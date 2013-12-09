@@ -8,9 +8,24 @@
 
 #import <Foundation/Foundation.h>
 
+// <EAGLE>
+#define MWPHOTO_EAGLE_INDEX_SHIFT 1000
+#define MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+#define MWPHOTO_EAGLE_TITLE
+#define MWPHOTO_EAGLE_EXTENSION
+#define MWPHOTO_EAGLE_PROGRESS
+#define MWPHOTO_EAGLE_STEPWISE_DISPLAY
+#define MWPHOTO_EAGLE_AUTO_SCALE
+// </EAGLE>
+
+
 // Notifications
 #define MWPHOTO_LOADING_DID_END_NOTIFICATION @"MWPHOTO_LOADING_DID_END_NOTIFICATION"
 #define MWPHOTO_PROGRESS_NOTIFICATION @"MWPHOTO_PROGRESS_NOTIFICATION"
+
+// <EAGLE>
+#define MWPHOTO_EAGLE_SCROLL_VIEW_DID_ZOOM @"MWPHOTO_EAGLE_SCROLL_VIEW_DID_ZOOM"
+// </EAGLE>
 
 // If you wish to use your own data models for photo then they must conform
 // to this protocol. See instructions for details on each method.
@@ -56,5 +71,9 @@
 // Return a caption string to be displayed over the image
 // Return nil to display no caption
 - (NSString *)caption; 
+
+// <EAGLE>
+- (BOOL)loadingCompleted;
+// </EAGLE>
 
 @end

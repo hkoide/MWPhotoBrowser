@@ -60,4 +60,20 @@
 - (void)showNextPhotoAnimated:(BOOL)animated;
 - (void)showPreviousPhotoAnimated:(BOOL)animated;
 
+// <EAGLE>
+
+#ifdef MWPHOTO_EAGLE_EXTENSION
+- (NSUInteger)currentPageIndex;
+- (UIView *)viewAtIndex:(NSUInteger)index;
+
+- (id<MWPhoto>)photoAtIndex:(NSUInteger)index;
+- (void)hideControlsAfterDelay;
+#endif // MWPHOTO_EAGLE_EXTENSION
+
+#ifdef MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+- (NSArray *)updateNavigationBarLeftButtonItems;
+- (NSArray *)updateNavigationBarRightButtonItems;
+- (NSArray *)updateToolBarItems;
+#endif // MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+
 @end

@@ -61,7 +61,10 @@
 	BOOL _rotating;
     BOOL _viewIsActive; // active as in it's in the view heirarchy
     BOOL _didSavePreviousStateOfNavBar;
-    
+
+#ifdef MWPHOTO_EAGLE_INDEX_SHIFT
+  NSInteger shiftedIndex;
+#endif // MWPHOTO_EAGLE_INDEX_SHIFT
 }
 
 // Private
@@ -69,7 +72,9 @@
 
 // Layout
 - (void)performLayout;
+#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
 - (BOOL)presentingViewControllerPrefersStatusBarHidden;
+#endif
 
 // Nav Bar Appearance
 - (void)setNavBarAppearance:(BOOL)animated;
@@ -179,10 +184,11 @@
     _photos = [[NSMutableArray alloc] init];
     
     _didSavePreviousStateOfNavBar = NO;
+#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
     if ([self respondsToSelector:@selector(automaticallyAdjustsScrollViewInsets)]){
         self.automaticallyAdjustsScrollViewInsets = NO;
     }
-    
+#endif
     // Listen for MWPhoto notifications
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleMWPhotoLoadingDidEndNotification:)
@@ -245,7 +251,9 @@
 	
     // Toolbar
     _toolbar = [[UIToolbar alloc] initWithFrame:[self frameForToolbarAtOrientation:self.interfaceOrientation]];
+#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
     _toolbar.tintColor = SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7") ? [UIColor whiteColor] : nil;
+#endif
     if ([[UIToolbar class] respondsToSelector:@selector(appearance)]) {
         [_toolbar setBackgroundImage:nil forToolbarPosition:UIToolbarPositionAny barMetrics:UIBarMetricsDefault];
         [_toolbar setBackgroundImage:nil forToolbarPosition:UIToolbarPositionAny barMetrics:UIBarMetricsLandscapePhone];
@@ -256,9 +264,12 @@
     // Toolbar Items
     if (self.displayNavArrows) {
         NSString *arrowPathFormat;
+#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
         if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7")) {
             arrowPathFormat = @"MWPhotoBrowser.bundle/images/UIBarButtonItemArrowOutline%@.png";
-        } else {
+        } else 
+#endif
+	{
             arrowPathFormat = @"MWPhotoBrowser.bundle/images/UIBarButtonItemArrow%@.png";
         }
         _previousButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:arrowPathFormat, @"Left"]] style:UIBarButtonItemStylePlain target:self action:@selector(gotoPreviousPage)];
@@ -280,13 +291,19 @@
     
     // Setup
     _performingLayout = YES;
+#ifndef MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
     NSUInteger numberOfPhotos = [self numberOfPhotos];
-    
+#endif // MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+  
 	// Setup pages
     [_visiblePages removeAllObjects];
     [_recycledPages removeAllObjects];
     
     // Navigation buttons
+#ifdef MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+  self.navigationItem.leftBarButtonItems = [self updateNavigationBarLeftButtonItems];
+  self.navigationItem.rightBarButtonItems = [self updateNavigationBarRightButtonItems];
+#else // MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
     if ([self.navigationController.viewControllers objectAtIndex:0] == self) {
         // We're first on stack so show done button
         UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Done", nil) style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
@@ -317,7 +334,8 @@
         _previousViewControllerBackButton = previousViewController.navigationItem.backBarButtonItem; // remember previous
         previousViewController.navigationItem.backBarButtonItem = newBackButton;
     }
-    
+#endif // MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+  
     // Show action button on nav if we can
     BOOL actionButtonOnNavBar = !self.navigationItem.rightBarButtonItem;
     if (_actionButton && actionButtonOnNavBar) {
@@ -325,6 +343,9 @@
     }
 
     // Toolbar items
+#ifdef MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+    [_toolbar setItems:[self updateToolBarItems]];
+#else // MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
     UIBarButtonItem *fixedLeftSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:self action:nil];
     fixedLeftSpace.width = 32; // To balance action button
     UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
@@ -339,8 +360,10 @@
     [items addObject:flexSpace];
     if (_actionButton && !actionButtonOnNavBar) [items addObject:_actionButton];
     [_toolbar setItems:items];
+#endif // MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
 
     // Toolbar visibility
+#ifndef MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
     BOOL hideToolbar = YES;
     for (UIBarButtonItem* item in _toolbar.items) {
         if (item != fixedLeftSpace && item != flexSpace) {
@@ -350,7 +373,9 @@
     }
     if (hideToolbar) {
         [_toolbar removeFromSuperview];
-    } else {
+    } else */
+#endif // MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+    {
         [self.view addSubview:_toolbar];
     }
     
@@ -377,6 +402,7 @@
     [super viewDidUnload];
 }
 
+#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
 - (BOOL)presentingViewControllerPrefersStatusBarHidden {
     UIViewController *presenting = self.presentingViewController;
     if (presenting) {
@@ -395,6 +421,7 @@
         return NO;
     }
 }
+#endif
 
 #pragma mark - Appearance
 
@@ -404,9 +431,12 @@
 	[super viewWillAppear:animated];
     
     // Status bar
+#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
     if ([UIViewController instancesRespondToSelector:@selector(prefersStatusBarHidden)]) {
         _leaveStatusBarAlone = [self presentingViewControllerPrefersStatusBarHidden];
-    } else {
+    } else
+#endif
+    {
         _leaveStatusBarAlone = [UIApplication sharedApplication].statusBarHidden;
     }
     if (CGRectEqualToRect([[UIApplication sharedApplication] statusBarFrame], CGRectZero)) {
@@ -475,11 +505,13 @@
 - (void)setNavBarAppearance:(BOOL)animated {
     [self.navigationController setNavigationBarHidden:NO animated:animated];
     UINavigationBar *navBar = self.navigationController.navigationBar;
+#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
     navBar.tintColor = SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7") ? [UIColor whiteColor] : nil;
     if ([navBar respondsToSelector:@selector(setBarTintColor:)]) {
         navBar.barTintColor = nil;
         navBar.shadowImage = nil;
     }
+#endif
     navBar.barStyle = UIBarStyleBlackTranslucent;
     if ([[UINavigationBar class] respondsToSelector:@selector(appearance)]) {
         [navBar setBackgroundImage:nil forBarMetrics:UIBarMetricsDefault];
@@ -489,9 +521,13 @@
 
 - (void)storePreviousNavBarAppearance {
     _didSavePreviousStateOfNavBar = YES;
+#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
     if ([UINavigationBar instancesRespondToSelector:@selector(barTintColor)]) {
         _previousNavBarBarTintColor = self.navigationController.navigationBar.barTintColor;
     }
+#else
+    _previousNavBarBarTintColor = self.navigationController.navigationBar.tintColor;
+#endif
     _previousNavBarTintColor = self.navigationController.navigationBar.tintColor;
     _previousNavBarHidden = self.navigationController.navigationBarHidden;
     _previousNavBarStyle = self.navigationController.navigationBar.barStyle;
@@ -506,9 +542,13 @@
         [self.navigationController setNavigationBarHidden:_previousNavBarHidden animated:animated];
         UINavigationBar *navBar = self.navigationController.navigationBar;
         navBar.tintColor = _previousNavBarTintColor;
+#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
         if ([UINavigationBar instancesRespondToSelector:@selector(barTintColor)]) {
             navBar.barTintColor = _previousNavBarBarTintColor;
         }
+#else
+      navBar.tintColor = _previousNavBarBarTintColor;
+#endif
         navBar.barStyle = _previousNavBarStyle;
         if ([[UINavigationBar class] respondsToSelector:@selector(appearance)]) {
             [navBar setBackgroundImage:_previousNavigationBarBackgroundImageDefault forBarMetrics:UIBarMetricsDefault];
@@ -556,7 +596,12 @@
         
         // Adjust scales if bounds has changed since last time
         static CGRect previousBounds = {0};
-        if (!CGRectEqualToRect(previousBounds, self.view.bounds)) {
+#ifdef MWPHOTO_EAGLE_AUTO_SCALE
+    if (page.zoomScale <= page.minimumZoomScale)
+#else // MWPHOTO_EAGLE_AUTO_SCALE
+    if (!CGRectEqualToRect(previousBounds, self.view.bounds))
+#endif // MWPHOTO_EAGLE_AUTO_SCALE
+        {
             // Update zooms for new bounds
             [page setMaxMinZoomScalesForCurrentBounds];
             previousBounds = self.view.bounds;
@@ -611,6 +656,10 @@
         self.navigationController.navigationBarHidden = NO;
         self.navigationController.navigationBar.alpha = 0;
     }
+  
+#ifdef MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+  [_toolbar setItems:[self updateToolBarItems]];
+#endif // MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
 }
 
 #pragma mark - Data
@@ -752,6 +801,10 @@
 	CGRect visibleBounds = _pagingScrollView.bounds;
 	int iFirstIndex = (int)floorf((CGRectGetMinX(visibleBounds)+PADDING*2) / CGRectGetWidth(visibleBounds));
 	int iLastIndex  = (int)floorf((CGRectGetMaxX(visibleBounds)-PADDING*2-1) / CGRectGetWidth(visibleBounds));
+#ifdef MWPHOTO_EAGLE_INDEX_SHIFT
+  iFirstIndex += shiftedIndex;
+  iLastIndex += shiftedIndex;
+#endif // MWPHOTO_EAGLE_INDEX_SHIFT
     if (iFirstIndex < 0) iFirstIndex = 0;
     if (iFirstIndex > [self numberOfPhotos] - 1) iFirstIndex = [self numberOfPhotos] - 1;
     if (iLastIndex < 0) iLastIndex = 0;
@@ -909,19 +962,31 @@
     CGRect bounds = _pagingScrollView.bounds;
     CGRect pageFrame = bounds;
     pageFrame.size.width -= (2 * PADDING);
-    pageFrame.origin.x = (bounds.size.width * index) + PADDING;
+#ifdef MWPHOTO_EAGLE_INDEX_SHIFT
+  pageFrame.origin.x = (bounds.size.width * (index - shiftedIndex)) + PADDING;
+#else // MWPHOTO_EAGLE_INDEX_SHIFT
+  pageFrame.origin.x = (bounds.size.width * index) + PADDING;
+#endif // MWPHOTO_EAGLE_INDEX_SHIFT
     return CGRectIntegral(pageFrame);
 }
 
 - (CGSize)contentSizeForPagingScrollView {
     // We have to use the paging scroll view's bounds to calculate the contentSize, for the same reason outlined above.
     CGRect bounds = _pagingScrollView.bounds;
-    return CGSizeMake(bounds.size.width * [self numberOfPhotos], bounds.size.height);
+#ifdef MWPHOTO_EAGLE_INDEX_SHIFT
+  return CGSizeMake(bounds.size.width * MIN ([self numberOfPhotos] - shiftedIndex, MWPHOTO_EAGLE_INDEX_SHIFT * 2), bounds.size.height);
+#else // MWPHOTO_EAGLE_INDEX_SHIFT
+  return CGSizeMake(bounds.size.width * [self numberOfPhotos], bounds.size.height);
+#endif // MWPHOTO_EAGLE_INDEX_SHIFT
 }
 
 - (CGPoint)contentOffsetForPageAtIndex:(NSUInteger)index {
 	CGFloat pageWidth = _pagingScrollView.bounds.size.width;
+#ifdef MWPHOTO_EAGLE_INDEX_SHIFT
+	CGFloat newOffset = (index - shiftedIndex) * pageWidth;
+#else // MWPHOTO_EAGLE_INDEX_SHIFT
 	CGFloat newOffset = index * pageWidth;
+#endif // MWPHOTO_EAGLE_INDEX_SHIFT
 	return CGPointMake(newOffset, 0);
 }
 
@@ -955,6 +1020,9 @@
 	// Calculate current page
 	CGRect visibleBounds = _pagingScrollView.bounds;
 	int index = (int)(floorf(CGRectGetMidX(visibleBounds) / CGRectGetWidth(visibleBounds)));
+#ifdef MWPHOTO_EAGLE_INDEX_SHIFT
+  index += shiftedIndex;
+#endif // MWPHOTO_EAGLE_INDEX_SHIFT
     if (index < 0) index = 0;
 	if (index > [self numberOfPhotos] - 1) index = [self numberOfPhotos] - 1;
 	NSUInteger previousCurrentPage = _currentPageIndex;
@@ -973,6 +1041,25 @@
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
 	// Update nav when page changes
 	[self updateNavigation];
+  
+#ifdef MWPHOTO_EAGLE_INDEX_SHIFT
+  BOOL update = NO;
+  
+  if ((shiftedIndex + MWPHOTO_EAGLE_INDEX_SHIFT * 2 - 1) <= _currentPageIndex) {
+    update = YES;
+  }
+  else if (_currentPageIndex <= shiftedIndex) {
+    update = YES;
+  }
+
+  if (update) {
+    shiftedIndex = (_currentPageIndex - 1) / MWPHOTO_EAGLE_INDEX_SHIFT * MWPHOTO_EAGLE_INDEX_SHIFT;
+    if (shiftedIndex < 0) shiftedIndex = 0;
+    else if ([self numberOfPhotos] <= shiftedIndex) shiftedIndex = [self numberOfPhotos] / MWPHOTO_EAGLE_INDEX_SHIFT;
+    NSLog (@"ShiftedIndex = %d", shiftedIndex);
+    [self reloadData];
+  }
+#endif // MWPHOTO_EAGLE_INDEX_SHIFT
 }
 
 #pragma mark - Navigation
@@ -981,7 +1068,11 @@
     
 	// Title
 	if ([self numberOfPhotos] > 1) {
-		self.title = [NSString stringWithFormat:@"%i %@ %i", _currentPageIndex+1, NSLocalizedString(@"of", @"Used in the context: 'Showing 1 of 3 items'"), [self numberOfPhotos]];		
+#ifdef MWPHOTO_EAGLE_TITLE
+		self.title = [NSString stringWithFormat:@"%i / %i", _currentPageIndex+1, [self numberOfPhotos]];
+#else // MWPHOTO_EAGLE_TITLE
+		self.title = [NSString stringWithFormat:@"%i %@ %i", _currentPageIndex+1, NSLocalizedString(@"of", @"Used in the context: 'Showing 1 of 3 items'"), [self numberOfPhotos]]
+#endif // MWPHOTO_EAGLE_TITLE
 	} else {
 		self.title = nil;
 	}
@@ -1031,7 +1122,16 @@
     
     // Force visible if no photos
     if (![self numberOfPhotos]) hidden = NO;
-    
+
+  
+#ifdef MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+  if (hidden == NO) {
+    self.navigationItem.leftBarButtonItems = [self updateNavigationBarLeftButtonItems];
+    self.navigationItem.rightBarButtonItems = [self updateNavigationBarRightButtonItems];
+    [_toolbar setItems:[self updateToolBarItems]];
+  }
+#endif // MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+  
     // Cancel any timers
     [self cancelControlHiding];
     
@@ -1042,6 +1142,7 @@
     
     // Status bar
     if (!_leaveStatusBarAlone) {
+#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
         if ([self respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
             
             // Hide status bar
@@ -1060,7 +1161,9 @@
                 
             }
 
-        } else {
+        } else
+#endif
+        {
             
             // Status bar and nav bar positioning
             if (self.wantsFullScreenLayout) {
@@ -1150,6 +1253,7 @@
 	
 }
 
+#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
 - (BOOL)prefersStatusBarHidden {
     if (!_leaveStatusBarAlone) {
         return _statusBarShouldBeHidden;
@@ -1157,6 +1261,7 @@
         return [self presentingViewControllerPrefersStatusBarHidden];
     }
 }
+#endif
 
 - (UIStatusBarAnimation)preferredStatusBarUpdateAnimation {
     return UIStatusBarAnimationSlide;
@@ -1190,6 +1295,13 @@
 }
 
 - (void)setCurrentPhotoIndex:(NSUInteger)index {
+#ifdef MWPHOTO_EAGLE_INDEX_SHIFT
+  shiftedIndex = (index - 1) / MWPHOTO_EAGLE_INDEX_SHIFT * MWPHOTO_EAGLE_INDEX_SHIFT;
+  if (shiftedIndex < 0) shiftedIndex = 0;
+  else if ([self numberOfPhotos] <= shiftedIndex) shiftedIndex = [self numberOfPhotos] / MWPHOTO_EAGLE_INDEX_SHIFT;
+  NSLog (@"ShiftedIndex = %d", shiftedIndex);
+#endif // MWPHOTO_EAGLE_INDEX_SHIFT
+  
     // Validate
     if (index >= [self numberOfPhotos])
         index = [self numberOfPhotos]-1;
@@ -1417,5 +1529,27 @@
     }
     [self dismissViewControllerAnimated:YES completion:nil];
 }
+
+#ifdef MWPHOTO_EAGLE_EXTENSION
+
+#pragma mark - EAGLE
+
+- (NSUInteger)currentPageIndex
+{
+  return _currentPageIndex;
+}
+
+- (UIView *)viewAtIndex:(NSUInteger)index
+{
+  return [self pageDisplayedAtIndex:index];
+}
+
+#endif // MWPHOTO_EAGLE_EXTENSION
+
+#ifdef MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+- (NSArray *)updateNavigationBarLeftButtonItems { return nil; }
+- (NSArray *)updateNavigationBarRightButtonItems { return nil; }
+- (NSArray *)updateToolBarItems { return nil; }
+#endif // MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
 
 @end

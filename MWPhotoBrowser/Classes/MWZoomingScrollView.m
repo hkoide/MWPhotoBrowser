@@ -10,7 +10,11 @@
 #import "MWZoomingScrollView.h"
 #import "MWPhotoBrowser.h"
 #import "MWPhoto.h"
+#ifdef MWPHOTO_EAGLE_PROGRESS
+#import "MBProgressHUD.h"
+#else // MWPHOTO_EAGLE_PROGRESS
 #import "DACircularProgressView.h"
+#endif // MWPHOTO_EAGLE_PROGRESS
 
 // Declare private methods of browser
 @interface MWPhotoBrowser ()
@@ -24,8 +28,10 @@
     
 	MWTapDetectingView *_tapView; // for background taps
 	MWTapDetectingImageView *_photoImageView;
-	DACircularProgressView *_loadingIndicator;
-    
+#ifndef MWPHOTO_EAGLE_PROGRESS
+	// DACircularProgressView *_loadingIndicator;
+#endif // MWPHOTO_EAGLE_PROGRESS
+  
 }
 
 @property (nonatomic, weak) MWPhotoBrowser *photoBrowser;
@@ -56,7 +62,8 @@
 		_photoImageView.contentMode = UIViewContentModeCenter;
 		_photoImageView.backgroundColor = [UIColor blackColor];
 		[self addSubview:_photoImageView];
-		
+
+#ifndef MWPHOTO_EAGLE_PROGRESS		
 		// Loading indicator
 		_loadingIndicator = [[DACircularProgressView alloc] initWithFrame:CGRectMake(140.0f, 30.0f, 40.0f, 40.0f)];
         _loadingIndicator.userInteractionEnabled = NO;
@@ -76,7 +83,8 @@
                                                  selector:@selector(setProgressFromNotification:)
                                                      name:MWPHOTO_PROGRESS_NOTIFICATION
                                                    object:nil];
-        
+#endif // MWPHOTO_EAGLE_PROGRESS
+      
 		// Setup
 		self.backgroundColor = [UIColor blackColor];
 		self.delegate = self;
@@ -105,14 +113,29 @@
     self.photo = nil;
     [_captionView removeFromSuperview];
     self.captionView = nil;
+  
+#ifdef MWPHOTO_EAGLE_PROGRESS
+  [MBProgressHUD hideAllHUDsForView:self animated:NO];
+#endif // MWPHOTO_EAGLE_PROGRESS
 }
 
 #pragma mark - Image
 
 // Get and display image
 - (void)displayImage {
-	if (_photo && _photoImageView.image == nil) {
+	if (_photo 
+#ifndef MWPHOTO_EAGLE_STEPWISE_DISPLAY
+		&& _photoImageView.image == nil
+#endif // MWPHOTO_EAGLE_STEPWISE_DISPLAY
+	) {
 		
+#ifdef MWPHOTO_EAGLE_STEPWISE_DISPLAY
+		BOOL replace = (_photoImageView.image != nil);
+		CGFloat previousZoomScale = self.zoomScale;
+		CGPoint previousContentOffset = self.contentOffset;
+		CGSize previousSize = replace ? _photoImageView.image.size : CGSizeZero;
+#endif // MWPHOTO_EAGLE_STEPWISE_DISPLAY
+    
 		// Reset
 		self.maximumZoomScale = 1;
 		self.minimumZoomScale = 1;
@@ -139,6 +162,20 @@
 
 			// Set zoom to minimum zoom
 			[self setMaxMinZoomScalesForCurrentBounds];
+      
+#ifdef MWPHOTO_EAGLE_STEPWISE_DISPLAY
+			if (replace) {
+				self.zoomScale = previousZoomScale * previousSize.width / img.size.width;
+				self.contentOffset = previousContentOffset;
+			}
+#endif // MWPHOTO_EAGLE_STEPWISE_DISPLAY
+
+#ifdef MWPHOTO_EAGLE_PROGRESS
+			if ([_photo respondsToSelector:@selector(loadingCompleted)]) {
+				if ([_photo loadingCompleted]) [self hideLoadingIndicator];
+				else [self showLoadingIndicator];
+			}
+#endif // MWPHOTO_EAGLE_PROGRESS
 			
 		} else {
 			
@@ -158,6 +195,7 @@
 
 #pragma mark - Loading Progress
 
+#ifndef MWPHOTO_EAGLE_PROGRESS
 - (void)setProgressFromNotification:(NSNotification *)notification {
     NSDictionary *dict = [notification object];
     MWPhoto *photoWithProgress = (MWPhoto *)[dict objectForKey:@"photo"];
@@ -166,14 +204,35 @@
         _loadingIndicator.progress = MAX(MIN(1, progress), 0);
     }
 }
+#endif // MWPHOTO_EAGLE_PROGRESS
 
 - (void)hideLoadingIndicator {
+#ifdef MWPHOTO_EAGLE_PROGRESS
+  __weak MWZoomingScrollView *SELF = self;
+  dispatch_async( dispatch_get_main_queue(), ^{ @autoreleasepool {
+    [MBProgressHUD hideAllHUDsForView:SELF animated:YES];
+  }});
+#else // MWPHOTO_EAGLE_PROGRESS  
     _loadingIndicator.hidden = YES;
+#endif // MWPHOTO_EAGLE_PROGRESS
 }
 
 - (void)showLoadingIndicator {
+#ifdef MWPHOTO_EAGLE_PROGRESS
+  __weak MWZoomingScrollView *SELF = self;
+  dispatch_async( dispatch_get_main_queue(), ^{ @autoreleasepool {
+    MBProgressHUD *hud = [MBProgressHUD HUDForView:SELF];
+    if (!hud) {
+      hud = [MBProgressHUD showHUDAddedTo:SELF animated:YES];
+      hud.userInteractionEnabled = NO;
+      SELF.multipleTouchEnabled = NO;
+    }
+    [SELF bringSubviewToFront:hud];
+  }});
+#else // MWPHOTO_EAGLE_PROGRESS
     _loadingIndicator.progress = 0;
     _loadingIndicator.hidden = NO;
+#endif // MWPHOTO_EAGLE_PROGRESS
 }
 
 #pragma mark - Setup
@@ -203,24 +262,37 @@
         // Let them go a bit bigger on a bigger screen!
         maxScale = 4;
     }
-    
+  
+#ifdef MWPHOTO_EAGLE_AUTO_SCALE
+    maxScale *= minScale;
+#endif // MWPHOTO_EAGLE_AUTO_SCALE
+  
+#ifndef MWPHOTO_EAGLE_AUTO_SCALE
     // Image is smaller than screen so no zooming!
 	if (xScale >= 1 && yScale >= 1) {
 		minScale = 1.0;
 	}
+#endif // MWPHOTO_EAGLE_AUTO_SCALE
 
     // Initial zoom
     CGFloat zoomScale = minScale;
     if (self.photoBrowser.zoomPhotosToFill) {
         // Zoom image to fill if the aspect ratios are fairly similar
+#ifndef MWPHOTO_EAGLE_AUTO_SCALE
         CGFloat boundsAR = boundsSize.width / boundsSize.height;
         CGFloat imageAR = imageSize.width / imageSize.height;
-        if (ABS(boundsAR - imageAR) < 0.3) {
+        if (ABS(boundsAR - imageAR) < 0.3)
+#endif // MWPHOTO_EAGLE_AUTO_SCALE
+        {
             zoomScale = MAX(xScale, yScale);
             // Ensure we don't zoom in or out too far, just in case
             zoomScale = MIN(MAX(minScale, zoomScale), maxScale);
         }
     }
+
+#ifdef MWPHOTO_EAGLE_AUTO_SCALE
+	zoomScale = minScale;
+#endif // MWPHOTO_EAGLE_AUTO_SCALE
 	
 	// Set
 	self.maximumZoomScale = maxScale;
@@ -252,9 +324,12 @@
 	_tapView.frame = self.bounds;
 	
 	// Indicator
+#ifndef MWPHOTO_EAGLE_PROGRESS
 	if (!_loadingIndicator.hidden)
         _loadingIndicator.center = CGPointMake(floorf(self.bounds.size.width/2.0),
                                                floorf(self.bounds.size.height/2.0));
+#endif // MWPHOTO_EAGLE_PROGRESS
+  
 	// Super
 	[super layoutSubviews];
 	
@@ -300,6 +375,21 @@
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
 	[_photoBrowser hideControlsAfterDelay];
 }
+
+#ifdef MWPHOTO_EAGLE_PROGRESS
+- (void)scrollViewDidZoom:(UIScrollView *)scrollView
+{
+  if (self.minimumZoomScale < self.zoomScale) {
+    [self hideLoadingIndicator];
+  }
+  
+  dispatch_async( dispatch_get_main_queue(), ^{
+    @autoreleasepool {
+      [[NSNotificationCenter defaultCenter] postNotificationName:MWPHOTO_EAGLE_SCROLL_VIEW_DID_ZOOM object:scrollView];
+    }
+  });
+}
+#endif // MWPHOTO_EAGLE_PROGRESS
 
 #pragma mark - Tap Detection
 

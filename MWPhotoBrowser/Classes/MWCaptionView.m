@@ -26,6 +26,7 @@ static const CGFloat labelPadding = 10;
     if (self) {
         self.userInteractionEnabled = NO;
         _photo = photo;
+#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
         if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7")) {
             // Use iOS 7 blurry goodness
             self.barStyle = UIBarStyleBlackTranslucent;
@@ -33,7 +34,9 @@ static const CGFloat labelPadding = 10;
             self.barTintColor = nil;
             self.barStyle = UIBarStyleBlackTranslucent;
             [self setBackgroundImage:nil forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
-        } else {
+        } else
+#endif
+        {
             // Transparent black with no gloss
             CGRect rect = CGRectMake(0.0f, 0.0f, 1.0f, 1.0f);
             UIGraphicsBeginImageContext(rect.size);
@@ -42,7 +45,11 @@ static const CGFloat labelPadding = 10;
             CGContextFillRect(context, rect);
             UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
             UIGraphicsEndImageContext();
-            [self setBackgroundImage:image forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
+#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
+          [self setBackgroundImage:image forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
+#else
+          [self setBackgroundImage:image forToolbarPosition:UIToolbarPositionAny barMetrics:UIBarMetricsDefault];
+#endif
         }
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin;
         [self setupCaption];
