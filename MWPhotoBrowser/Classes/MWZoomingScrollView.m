@@ -29,7 +29,7 @@
 	MWTapDetectingView *_tapView; // for background taps
 	MWTapDetectingImageView *_photoImageView;
 #ifndef MWPHOTO_EAGLE_PROGRESS
-	// DACircularProgressView *_loadingIndicator;
+	DACircularProgressView *_loadingIndicator;
 #endif // MWPHOTO_EAGLE_PROGRESS
   
 }

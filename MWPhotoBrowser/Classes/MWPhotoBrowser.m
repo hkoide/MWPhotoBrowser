@@ -11,7 +11,9 @@
 #import "MWPhotoBrowser.h"
 #import "MWZoomingScrollView.h"
 #import "MBProgressHUD.h"
+#ifndef MWPHOTO_EAGLE_NO_SDWEBIMAGE
 #import "SDImageCache.h"
+#endif // MWPHOTO_EAGLE_NO_SDWEBIMAGE
 
 #define PADDING                 10
 #define PAGE_INDEX_TAG_OFFSET   1000
@@ -201,7 +203,9 @@
     _pagingScrollView.delegate = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [self releaseAllUnderlyingPhotos:NO];
+#ifndef MWPHOTO_EAGLE_NO_SDWEBIMAGE
     [[SDImageCache sharedImageCache] clearMemory]; // clear memory
+#endif // MWPHOTO_EAGLE_NO_SDWEBIMAGE
 }
 
 - (void)releaseAllUnderlyingPhotos:(BOOL)preserveCurrent {
@@ -373,7 +377,7 @@
     }
     if (hideToolbar) {
         [_toolbar removeFromSuperview];
-    } else */
+    } else
 #endif // MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
     {
         [self.view addSubview:_toolbar];
@@ -1071,7 +1075,7 @@
 #ifdef MWPHOTO_EAGLE_TITLE
 		self.title = [NSString stringWithFormat:@"%i / %i", _currentPageIndex+1, [self numberOfPhotos]];
 #else // MWPHOTO_EAGLE_TITLE
-		self.title = [NSString stringWithFormat:@"%i %@ %i", _currentPageIndex+1, NSLocalizedString(@"of", @"Used in the context: 'Showing 1 of 3 items'"), [self numberOfPhotos]]
+		self.title = [NSString stringWithFormat:@"%i %@ %i", _currentPageIndex+1, NSLocalizedString(@"of", @"Used in the context: 'Showing 1 of 3 items'"), [self numberOfPhotos]];
 #endif // MWPHOTO_EAGLE_TITLE
 	} else {
 		self.title = nil;
