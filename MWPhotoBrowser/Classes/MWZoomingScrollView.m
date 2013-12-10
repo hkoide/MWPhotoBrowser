@@ -146,8 +146,10 @@
 		UIImage *img = [self.photoBrowser imageForPhoto:_photo];
 		if (img) {
 			
+#ifndef MWPHOTO_EAGLE_PROGRESS
 			// Hide indicator
 			[self hideLoadingIndicator];
+#endif // MWPHOTO_EAGLE_PROGRESS
 			
 			// Set image
 			_photoImageView.image = img;
