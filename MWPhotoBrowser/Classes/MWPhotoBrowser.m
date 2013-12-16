@@ -1053,7 +1053,9 @@
     update = YES;
   }
   else if (_currentPageIndex <= shiftedIndex) {
-    update = YES;
+    if (0 < _currentPageIndex) {
+      update = YES;
+    }
   }
 
   if (update) {
@@ -1071,10 +1073,11 @@
 - (void)updateNavigation {
     
 	// Title
-	if ([self numberOfPhotos] > 1) {
 #ifdef MWPHOTO_EAGLE_TITLE
+	if ([self numberOfPhotos] > 0) {
 		self.title = [NSString stringWithFormat:@"%i / %i", _currentPageIndex+1, [self numberOfPhotos]];
 #else // MWPHOTO_EAGLE_TITLE
+    if ([self numberOfPhotos] > 1) {
 		self.title = [NSString stringWithFormat:@"%i %@ %i", _currentPageIndex+1, NSLocalizedString(@"of", @"Used in the context: 'Showing 1 of 3 items'"), [self numberOfPhotos]];
 #endif // MWPHOTO_EAGLE_TITLE
 	} else {
