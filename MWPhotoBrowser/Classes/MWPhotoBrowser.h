@@ -68,6 +68,7 @@
 
 - (id<MWPhoto>)photoAtIndex:(NSUInteger)index;
 - (void)hideControlsAfterDelay;
+- (void)cancelControlHiding;
 #endif // MWPHOTO_EAGLE_EXTENSION
 
 #ifdef MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
