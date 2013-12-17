@@ -65,6 +65,7 @@
 #ifdef MWPHOTO_EAGLE_EXTENSION
 - (NSUInteger)currentPageIndex;
 - (UIView *)viewAtIndex:(NSUInteger)index;
+- (void)reloadData;
 
 - (id<MWPhoto>)photoAtIndex:(NSUInteger)index;
 - (void)hideControlsAfterDelay;
