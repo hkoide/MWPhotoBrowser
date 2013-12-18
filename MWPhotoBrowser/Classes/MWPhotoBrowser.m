@@ -937,11 +937,16 @@
     }
     
     // Notify delegate
+#ifndef MWPHOTO_EAGLE_FORCE_UPDATE
     static NSUInteger prevIndex = NSUIntegerMax;
-    if (index != prevIndex) {
+    if (index != prevIndex)
+#endif // MWPHOTO_EAGLE_FORCE_UPDATE
+    {
         if ([_delegate respondsToSelector:@selector(photoBrowser:didDisplayPhotoAtIndex:)])
             [_delegate photoBrowser:self didDisplayPhotoAtIndex:index];
+#ifndef MWPHOTO_EAGLE_FORCE_UPDATE
         prevIndex = index;
+#endif // MWPHOTO_EAGLE_FORCE_UPDATE
     }
     
     // Update nav
