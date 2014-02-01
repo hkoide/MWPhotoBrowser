@@ -912,7 +912,13 @@
         // photo loaded so load ajacent now
         [self loadAdjacentPhotosIfNecessary:currentPhoto];
     }
-    
+
+#ifdef MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+    self.navigationItem.leftBarButtonItems = [self updateNavigationBarLeftButtonItems];
+    self.navigationItem.rightBarButtonItems = [self updateNavigationBarRightButtonItems];
+    [_toolbar setItems:[self updateToolBarItems]];
+#endif // MWPHOTO_EAGLE_ENTRUST_BAR_ITEMS
+  
     // Notify delegate
 #ifndef MWPHOTO_EAGLE_FORCE_UPDATE
     static NSUInteger prevIndex = NSUIntegerMax;
