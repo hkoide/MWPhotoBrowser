@@ -74,9 +74,7 @@
 
 // Layout
 - (void)performLayout;
-#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
 - (BOOL)presentingViewControllerPrefersStatusBarHidden;
-#endif
 
 // Nav Bar Appearance
 - (void)setNavBarAppearance:(BOOL)animated;
@@ -186,11 +184,10 @@
     _photos = [[NSMutableArray alloc] init];
     
     _didSavePreviousStateOfNavBar = NO;
-#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
     if ([self respondsToSelector:@selector(automaticallyAdjustsScrollViewInsets)]){
         self.automaticallyAdjustsScrollViewInsets = NO;
     }
-#endif
+
     // Listen for MWPhoto notifications
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleMWPhotoLoadingDidEndNotification:)
@@ -255,9 +252,7 @@
 	
     // Toolbar
     _toolbar = [[UIToolbar alloc] initWithFrame:[self frameForToolbarAtOrientation:self.interfaceOrientation]];
-#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
     _toolbar.tintColor = SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7") ? [UIColor whiteColor] : nil;
-#endif
     if ([[UIToolbar class] respondsToSelector:@selector(appearance)]) {
         [_toolbar setBackgroundImage:nil forToolbarPosition:UIToolbarPositionAny barMetrics:UIBarMetricsDefault];
         [_toolbar setBackgroundImage:nil forToolbarPosition:UIToolbarPositionAny barMetrics:UIBarMetricsLandscapePhone];
@@ -268,12 +263,9 @@
     // Toolbar Items
     if (self.displayNavArrows) {
         NSString *arrowPathFormat;
-#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
         if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7")) {
             arrowPathFormat = @"MWPhotoBrowser.bundle/images/UIBarButtonItemArrowOutline%@.png";
-        } else 
-#endif
-	{
+        } else {
             arrowPathFormat = @"MWPhotoBrowser.bundle/images/UIBarButtonItemArrow%@.png";
         }
         _previousButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:arrowPathFormat, @"Left"]] style:UIBarButtonItemStylePlain target:self action:@selector(gotoPreviousPage)];
@@ -406,7 +398,6 @@
     [super viewDidUnload];
 }
 
-#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
 - (BOOL)presentingViewControllerPrefersStatusBarHidden {
     UIViewController *presenting = self.presentingViewController;
     if (presenting) {
@@ -425,7 +416,6 @@
         return NO;
     }
 }
-#endif
 
 #pragma mark - Appearance
 
@@ -435,12 +425,9 @@
 	[super viewWillAppear:animated];
     
     // Status bar
-#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
     if ([UIViewController instancesRespondToSelector:@selector(prefersStatusBarHidden)]) {
         _leaveStatusBarAlone = [self presentingViewControllerPrefersStatusBarHidden];
-    } else
-#endif
-    {
+    } else {
         _leaveStatusBarAlone = [UIApplication sharedApplication].statusBarHidden;
     }
     if (CGRectEqualToRect([[UIApplication sharedApplication] statusBarFrame], CGRectZero)) {
@@ -509,13 +496,11 @@
 - (void)setNavBarAppearance:(BOOL)animated {
     [self.navigationController setNavigationBarHidden:NO animated:animated];
     UINavigationBar *navBar = self.navigationController.navigationBar;
-#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
     navBar.tintColor = SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7") ? [UIColor whiteColor] : nil;
     if ([navBar respondsToSelector:@selector(setBarTintColor:)]) {
         navBar.barTintColor = nil;
         navBar.shadowImage = nil;
     }
-#endif
     navBar.barStyle = UIBarStyleBlackTranslucent;
     if ([[UINavigationBar class] respondsToSelector:@selector(appearance)]) {
         [navBar setBackgroundImage:nil forBarMetrics:UIBarMetricsDefault];
@@ -525,13 +510,9 @@
 
 - (void)storePreviousNavBarAppearance {
     _didSavePreviousStateOfNavBar = YES;
-#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
     if ([UINavigationBar instancesRespondToSelector:@selector(barTintColor)]) {
         _previousNavBarBarTintColor = self.navigationController.navigationBar.barTintColor;
     }
-#else
-    _previousNavBarBarTintColor = self.navigationController.navigationBar.tintColor;
-#endif
     _previousNavBarTintColor = self.navigationController.navigationBar.tintColor;
     _previousNavBarHidden = self.navigationController.navigationBarHidden;
     _previousNavBarStyle = self.navigationController.navigationBar.barStyle;
@@ -546,13 +527,9 @@
         [self.navigationController setNavigationBarHidden:_previousNavBarHidden animated:animated];
         UINavigationBar *navBar = self.navigationController.navigationBar;
         navBar.tintColor = _previousNavBarTintColor;
-#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
         if ([UINavigationBar instancesRespondToSelector:@selector(barTintColor)]) {
             navBar.barTintColor = _previousNavBarBarTintColor;
         }
-#else
-      navBar.tintColor = _previousNavBarBarTintColor;
-#endif
         navBar.barStyle = _previousNavBarStyle;
         if ([[UINavigationBar class] respondsToSelector:@selector(appearance)]) {
             [navBar setBackgroundImage:_previousNavigationBarBackgroundImageDefault forBarMetrics:UIBarMetricsDefault];
@@ -1154,7 +1131,6 @@
     
     // Status bar
     if (!_leaveStatusBarAlone) {
-#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
         if ([self respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
             
             // Hide status bar
@@ -1173,10 +1149,8 @@
                 
             }
 
-        } else
-#endif
-        {
-            
+        } else {
+          
             // Status bar and nav bar positioning
             if (self.wantsFullScreenLayout) {
                 
@@ -1265,7 +1239,6 @@
 	
 }
 
-#if 70000 <= __IPHONE_OS_VERSION_MAX_ALLOWED
 - (BOOL)prefersStatusBarHidden {
     if (!_leaveStatusBarAlone) {
         return _statusBarShouldBeHidden;
@@ -1273,7 +1246,6 @@
         return [self presentingViewControllerPrefersStatusBarHidden];
     }
 }
-#endif
 
 - (UIStatusBarAnimation)preferredStatusBarUpdateAnimation {
     return UIStatusBarAnimationSlide;
