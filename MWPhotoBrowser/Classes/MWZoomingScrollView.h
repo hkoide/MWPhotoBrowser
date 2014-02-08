@@ -24,6 +24,9 @@
 - (void)displayImage;
 - (void)displayImageFailure;
 - (void)setMaxMinZoomScalesForCurrentBounds;
+#ifdef MWPHOTO_EAGLE_AUTO_SCALE
+- (void)updateMinZoomScalesForCurrentBounds;
+#endif // MWPHOTO_EAGLE_AUTO_SCALE
 - (void)prepareForReuse;
 
 @end

@@ -577,14 +577,19 @@
         
         // Adjust scales if bounds has changed since last time
         static CGRect previousBounds = {0};
-#ifdef MWPHOTO_EAGLE_AUTO_SCALE
-    if (page.zoomScale <= page.minimumZoomScale)
-#else // MWPHOTO_EAGLE_AUTO_SCALE
     if (!CGRectEqualToRect(previousBounds, self.view.bounds))
-#endif // MWPHOTO_EAGLE_AUTO_SCALE
         {
             // Update zooms for new bounds
+#ifdef MWPHOTO_EAGLE_AUTO_SCALE
+          if (page.zoomScale <= page.minimumZoomScale) {
             [page setMaxMinZoomScalesForCurrentBounds];
+          }
+          else {
+            [page updateMinZoomScalesForCurrentBounds];
+          }
+#else // MWPHOTO_EAGLE_AUTO_SCALE
+            [page setMaxMinZoomScalesForCurrentBounds];
+#endif // MWPHOTO_EAGLE_AUTO_SCALE
             previousBounds = self.view.bounds;
         }
 

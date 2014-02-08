@@ -259,14 +259,20 @@
     CGFloat minScale = MIN(xScale, yScale);                 // use minimum of these to allow the image to become fully visible
 
     // Calculate Max
+#ifdef MWPHOTO_EAGLE_AUTO_SCALE
+	CGFloat maxScale = 2.65;
+#else // MWPHOTO_EAGLE_AUTO_SCALE
 	CGFloat maxScale = 3;
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         // Let them go a bit bigger on a bigger screen!
         maxScale = 4;
     }
+#endif // MWPHOTO_EAGLE_AUTO_SCALE
   
 #ifdef MWPHOTO_EAGLE_AUTO_SCALE
-    maxScale *= minScale;
+  CGFloat imageLongSide = imageSize.width < imageSize.height ? imageSize.height : imageSize.width;
+  CGFloat boundsShortSide = boundsSize.width < boundsSize.height ? boundsSize.width : boundsSize.height;
+  maxScale *= (boundsShortSide / imageLongSide);
 #endif // MWPHOTO_EAGLE_AUTO_SCALE
   
 #ifndef MWPHOTO_EAGLE_AUTO_SCALE
@@ -317,6 +323,26 @@
 	[self setNeedsLayout];
 
 }
+
+#ifdef MWPHOTO_EAGLE_AUTO_SCALE
+- (void)updateMinZoomScalesForCurrentBounds {
+	
+	// Bail
+	if (_photoImageView.image == nil) return;
+	
+	// Sizes
+  CGSize boundsSize = self.bounds.size;
+  CGSize imageSize = _photoImageView.image.size;
+  
+  // Calculate Min
+  CGFloat xScale = boundsSize.width / imageSize.width;    // the scale needed to perfectly fit the image width-wise
+  CGFloat yScale = boundsSize.height / imageSize.height;  // the scale needed to perfectly fit the image height-wise
+  CGFloat minScale = MIN(xScale, yScale);                 // use minimum of these to allow the image to become fully visible
+  
+	// Set
+	self.minimumZoomScale = minScale;
+}
+#endif // MWPHOTO_EAGLE_AUTO_SCALE
 
 #pragma mark - Layout
 
@@ -405,7 +431,11 @@
 	[NSObject cancelPreviousPerformRequestsWithTarget:_photoBrowser];
 	
 	// Zoom
+#ifdef MWPHOTO_EAGLE_AUTO_SCALE
+  if ((fabs (self.zoomScale - self.maximumZoomScale) / self.maximumZoomScale) < 0.1) {
+#else // MWPHOTO_EAGLE_AUTO_SCALE
 	if (self.zoomScale == self.maximumZoomScale) {
+#endif // MWPHOTO_EAGLE_AUTO_SCALE
 		
 		// Zoom out
 		[self setZoomScale:self.minimumZoomScale animated:YES];
@@ -414,6 +444,9 @@
 		
 		// Zoom in
         CGFloat newZoomScale;
+#ifdef MWPHOTO_EAGLE_AUTO_SCALE
+    newZoomScale = self.maximumZoomScale;
+#else // MWPHOTO_EAGLE_AUTO_SCALE
         if (((self.zoomScale - self.minimumZoomScale) / self.maximumZoomScale) >= 0.3) { // we're zoomed in a fair bit, so zoom to max now
             // Go to max zoom
             newZoomScale = self.maximumZoomScale;
@@ -421,6 +454,7 @@
             // Zoom to 50%
             newZoomScale = ((self.maximumZoomScale + self.minimumZoomScale) / 2);
         }
+#endif // MWPHOTO_EAGLE_AUTO_SCALE
         CGFloat xsize = self.bounds.size.width / newZoomScale;
         CGFloat ysize = self.bounds.size.height / newZoomScale;
         [self zoomToRect:CGRectMake(touchPoint.x - xsize/2, touchPoint.y - ysize/2, xsize, ysize) animated:YES];
