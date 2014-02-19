@@ -29,4 +29,8 @@
 #endif // MWPHOTO_EAGLE_AUTO_SCALE
 - (void)prepareForReuse;
 
+#ifdef MWPHOTO_EAGLE_DISABLE_PINCH_MODE
+- (void)disablePinchGesture:(BOOL)disable;
+#endif // MWPHOTO_EAGLE_DISABLE_PINCH_MODE
+
 @end

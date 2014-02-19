@@ -36,6 +36,10 @@
 
 @property (nonatomic, weak) MWPhotoBrowser *photoBrowser;
 
+#ifdef MWPHOTO_EAGLE_DISABLE_PINCH_MODE
+@property (nonatomic) BOOL pinchGestureDisabled;
+#endif // MWPHOTO_EAGLE_DISABLE_PINCH_MODE
+
 - (void)handleSingleTap:(CGPoint)touchPoint;
 - (void)handleDoubleTap:(CGPoint)touchPoint;
 
@@ -496,4 +500,22 @@
     [self handleDoubleTap:CGPointMake(touchX, touchY)];
 }
 
+#pragma mark -
+  
+#ifdef MWPHOTO_EAGLE_DISABLE_PINCH_MODE
+- (void)disablePinchGesture:(BOOL)disable
+{
+  self.pinchGestureRecognizer.enabled = !disable;
+  self.pinchGestureDisabled = disable;
+}
+
+- (void)addGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
+{
+  if ([gestureRecognizer isKindOfClass:[UIPinchGestureRecognizer class]]) {
+    gestureRecognizer.enabled = !self.pinchGestureDisabled;
+  }
+  [super addGestureRecognizer:gestureRecognizer];
+}
+#endif // MWPHOTO_EAGLE_DISABLE_PINCH_MODE
+  
 @end
