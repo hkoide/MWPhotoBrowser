@@ -577,7 +577,11 @@
         
         // Adjust scales if bounds has changed since last time
         static CGRect previousBounds = {0};
+#ifdef MWPHOTO_EAGLE_AUTO_SCALE
+    if (previousBounds.size.width != self.view.bounds.size.width)
+#else // MWPHOTO_EAGLE_AUTO_SCALE
     if (!CGRectEqualToRect(previousBounds, self.view.bounds))
+#endif // MWPHOTO_EAGLE_AUTO_SCALE
         {
             // Update zooms for new bounds
 #ifdef MWPHOTO_EAGLE_AUTO_SCALE
