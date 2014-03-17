@@ -430,10 +430,12 @@
     } else {
         _leaveStatusBarAlone = [UIApplication sharedApplication].statusBarHidden;
     }
-    if (CGRectEqualToRect([[UIApplication sharedApplication] statusBarFrame], CGRectZero)) {
+#ifndef MWPHOTO_EAGLE_ENTRUST_STATUS_BAR
+  if (CGRectEqualToRect([[UIApplication sharedApplication] statusBarFrame], CGRectZero)) {
         // If the frame is zero then definitely leave it alone
         _leaveStatusBarAlone = YES;
     }
+#endif // MWPHOTO_EAGLE_ENTRUST_STATUS_BAR
     if (!_leaveStatusBarAlone && self.wantsFullScreenLayout && UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
         _previousStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
         [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent animated:animated];
