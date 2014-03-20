@@ -194,6 +194,9 @@
                                                  name:MWPHOTO_LOADING_DID_END_NOTIFICATION
                                                object:nil];
     
+#ifdef MWPHOTO_EAGLE_TITLE
+  self.titleFormat = @"%d / %d";
+#endif // MWPHOTO_EAGLE_TITLE
 }
 
 - (void)dealloc {
@@ -1074,7 +1077,7 @@
 	// Title
 #ifdef MWPHOTO_EAGLE_TITLE
 	if ([self numberOfPhotos] > 0) {
-		self.title = [NSString stringWithFormat:@"%i / %i", _currentPageIndex+1, [self numberOfPhotos]];
+		self.title = [NSString stringWithFormat:self.titleFormat, _currentPageIndex+1, [self numberOfPhotos]];
 #else // MWPHOTO_EAGLE_TITLE
     if ([self numberOfPhotos] > 1) {
 		self.title = [NSString stringWithFormat:@"%i %@ %i", _currentPageIndex+1, NSLocalizedString(@"of", @"Used in the context: 'Showing 1 of 3 items'"), [self numberOfPhotos]];
