@@ -45,6 +45,10 @@
 @property (nonatomic) BOOL displayActionButton;
 @property (nonatomic, readonly) NSUInteger currentIndex;
 
+#ifdef MWPHOTO_EAGLE_TITLE
+@property (nonatomic, copy) NSString *titleFormat;
+#endif // MWPHOTO_EAGLE_TITLE
+
 // Init
 - (id)initWithPhotos:(NSArray *)photosArray  __attribute__((deprecated("Use initWithDelegate: instead"))); // Depreciated
 - (id)initWithDelegate:(id <MWPhotoBrowserDelegate>)delegate;
