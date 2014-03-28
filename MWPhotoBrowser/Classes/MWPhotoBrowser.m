@@ -444,6 +444,9 @@
     
     // Navigation bar appearance
     if (!_viewIsActive && [self.navigationController.viewControllers objectAtIndex:0] != self) {
+#ifdef MWPHOTO_EAGLE_FIX_ROTATION_IN_LAST_PAGE
+      if (!_didSavePreviousStateOfNavBar)
+#endif // MWPHOTO_EAGLE_FIX_ROTATION_IN_LAST_PAGE
         [self storePreviousNavBarAppearance];
     }
     [self setNavBarAppearance:animated];
@@ -470,7 +473,10 @@
         [self restorePreviousNavBarAppearance:animated];
         
     }
-    
+#ifdef MWPHOTO_EAGLE_FIX_ROTATION_IN_LAST_PAGE
+    _viewIsActive = NO;
+#endif // MWPHOTO_EAGLE_FIX_ROTATION_IN_LAST_PAGE
+  
     // Controls
     [self.navigationController.navigationBar.layer removeAllAnimations]; // Stop all animations on nav bar
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // Cancel any pending toggles from taps
