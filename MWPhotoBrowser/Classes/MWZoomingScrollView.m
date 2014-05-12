@@ -133,6 +133,13 @@
 #endif // MWPHOTO_EAGLE_STEPWISE_DISPLAY
 	) {
 		
+#ifdef MWPHOTO_EAGLE_STEPWISE_DISPLAY
+		BOOL replace = (_photoImageView.image != nil);
+		CGFloat previousZoomScale = self.zoomScale;
+		CGPoint previousContentOffset = self.contentOffset;
+		CGSize previousSize = replace ? _photoImageView.image.size : CGSizeZero;
+#endif // MWPHOTO_EAGLE_STEPWISE_DISPLAY
+    
 		// Reset
 		self.maximumZoomScale = 1;
 		self.minimumZoomScale = 1;
@@ -142,21 +149,7 @@
 		// Get image from browser as it handles ordering of fetching
 		UIImage *img = [self.photoBrowser imageForPhoto:_photo];
 		if (img) {
-
-#ifdef MWPHOTO_EAGLE_STEPWISE_DISPLAY
-      BOOL replace = (_photoImageView.image != nil);
-      if (replace) {
-        CGSize previousSize = _photoImageView.image.size;
-        CGSize newSize = img.size;
-        if ((previousSize.width <= previousSize.height && newSize.width > newSize.height) || (previousSize.width > previousSize.height && newSize.width <= newSize.height)) {
-          replace = NO; // NIJ-730 rotation時は除外させる
-        }
-      }
-      CGFloat previousZoomScale = self.zoomScale;
-      CGPoint previousContentOffset = self.contentOffset;
-      CGSize previousSize = replace ? _photoImageView.image.size : CGSizeZero;
-#endif // MWPHOTO_EAGLE_STEPWISE_DISPLAY
-      
+			
 #ifndef MWPHOTO_EAGLE_PROGRESS
 			// Hide indicator
 			[self hideLoadingIndicator];
