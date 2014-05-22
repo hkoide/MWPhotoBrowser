@@ -345,6 +345,9 @@
   
 	// Set
 	self.minimumZoomScale = minScale;
+  if (self.zoomScale < self.minimumZoomScale) {
+    self.zoomScale = self.minimumZoomScale;
+  }
 }
 #endif // MWPHOTO_EAGLE_AUTO_SCALE
 
